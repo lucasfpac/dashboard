@@ -1,21 +1,21 @@
 <template>
-  <v-app theme="dark">
+  <v-app>
     <v-navigation-drawer v-model="isDrawerOpen">
       <v-list>
         <v-list-subheader>Menu</v-list-subheader>
         <v-list-item prepend-icon="mdi-home">Home</v-list-item>
-        <v-list-item prepend-icon="mdi-account">Usuários</v-list-item>
-        <v-list-group value="Clientes">
+        <v-list-item prepend-icon="mdi-account">Users</v-list-item>
+        <v-list-group value="Customers">
           <template #activator="{ props }">
             <v-list-item
               v-bind="props"
               prepend-icon="mdi-account-circle"
-              title="Clientes"
+              title="Customers"
             >
             </v-list-item>
           </template>
-          <v-list-item prepend-icon="mdi-currency-usd">Vendas</v-list-item>
-          <v-list-item prepend-icon="mdi-chart-line">Relatório</v-list-item>
+          <v-list-item prepend-icon="mdi-currency-usd">Sales</v-list-item>
+          <v-list-item prepend-icon="mdi-chart-line">Reports</v-list-item>
         </v-list-group>
       </v-list>
     </v-navigation-drawer>
@@ -23,8 +23,9 @@
       <v-app-bar-nav-icon
         @click="isDrawerOpen = !isDrawerOpen"
       ></v-app-bar-nav-icon>
-      <v-app-bar-title>Meu app</v-app-bar-title>
+      <v-app-bar-title>My app</v-app-bar-title>
       <template #append>
+        <v-btn @click="toggleTheme">Toggle theme</v-btn>
         <v-btn icon class="mr-2" @click="alerta()">
           <v-badge dot color="info">
             <v-icon icon="mdi-bell-outline" size="x-large"></v-icon>
@@ -41,10 +42,10 @@
           <v-card min-width="200px">
             <v-list lines="false" density="compact" nav>
               <v-list-item prepend-icon="mdi-account-outline">
-                <v-list-item-title> Meu Perfil</v-list-item-title>
+                <v-list-item-title> My Account</v-list-item-title>
               </v-list-item>
               <v-list-item prepend-icon="mdi-heart-outline">
-                <v-list-item-title> Favoritos</v-list-item-title>
+                <v-list-item-title>Favourite</v-list-item-title>
               </v-list-item>
             </v-list>
           </v-card>
@@ -56,14 +57,44 @@
         <h1 class="mb-6">Dashboard</h1>
         <v-card flat class="border mb-4">
           <div class="d-flex justify-space-between">
-            <v-card-title>Ultimos Usuários</v-card-title>
+            <v-card-title>Last Users</v-card-title>
             <v-card-title>
-              <v-dialog width="600px">
-                <template #activator="{ props }">
-                  <v-btn v-bind="props" variant="tonal" size="small">Adicionar Usuários</v-btn>
-                </template>
+              <v-btn @click="isDialogOpen = true" variant="tonal" size="small"
+                >Add User</v-btn
+              >
+              <v-dialog v-model="isDialogOpen" width="600px">
                 <v-card>
-                  <v-card-text> test</v-card-text>
+                  <v-card-title>Add User</v-card-title>
+                  <v-card-text>
+                    <v-row>
+                      <v-col>
+                        <v-text-field
+                          label="Name"
+                          variant="outlined"
+                          :rules="nameRules"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col>
+                        <v-text-field
+                          label="Email"
+                          variant="outlined"
+                          :rules="emailRules"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+                    <v-select
+                      label="Function"
+                      variant="outlined"
+                      :items="['Admin', 'Manager', 'Convidado']"
+                    ></v-select>
+                  </v-card-text>
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn variant="text" @click="isDialogOpen = false"
+                      >Cancelar</v-btn
+                    >
+                    <v-btn variant="tonal" color="success">Save</v-btn>
+                  </v-card-actions>
                 </v-card>
               </v-dialog>
             </v-card-title>
@@ -71,27 +102,39 @@
           <v-table density="compact">
             <thead>
               <tr>
-                <th>Nome</th>
+                <th>Name</th>
                 <th>Email</th>
-                <th>cargo</th>
-                <th>Ações</th>
+                <th>Function</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td>Fulano</td>
                 <td>fulano@gmail.com</td>
-                <td>Admin</td>
                 <td>
-                  <v-btn variant="tonal" color="primary">Editar</v-btn>
+                  <v-chip color="success" variant="outlined" size="small"
+                    >Manager</v-chip
+                  >
+                </td>
+                <td>
+                  <v-btn variant="tonal" color="primary" size="small"
+                    >Edit</v-btn
+                  >
                 </td>
               </tr>
               <tr>
                 <td>Lucas Fortunato</td>
                 <td>Lucas@gmail.com</td>
-                <td>Admin</td>
                 <td>
-                  <v-btn variant="tonal" color="primary">editar</v-btn>
+                  <v-chip color="primary" variant="outlined" size="small"
+                    >Admin</v-chip
+                  >
+                </td>
+                <td>
+                  <v-btn variant="tonal" color="primary" size="small"
+                    >Edit</v-btn
+                  >
                 </td>
               </tr>
             </tbody>
@@ -204,15 +247,52 @@
 
 <script>
 import { ref } from "vue";
+import { useTheme } from "vuetify";
+
 export default {
   setup() {
     const alerta = () => {
       alert("No Notifications to show");
     };
+    const theme = useTheme();
     const isDrawerOpen = ref(false);
+    const isDialogOpen = ref(false);
+    const nameRules = [
+      (value) => {
+        if (value) return true;
+
+        return "Name is required.";
+      },
+      (value) => {
+        if (value?.length <= 10) return true;
+
+        return "Name must be less than 10 characters.";
+      },
+    ];
+    const emailRules = [
+      (value) => {
+        if (value) return true;
+
+        return "E-mail is requred.";
+      },
+      (value) => {
+        if (/.+@.+\..+/.test(value)) return true;
+
+        return "E-mail must be valid.";
+      },
+    ];
+    function toggleTheme() {
+      theme.global.name.value = theme.global.current.value.dark
+        ? "light"
+        : "dark";
+    }
     return {
       alerta,
       isDrawerOpen,
+      isDialogOpen,
+      nameRules,
+      emailRules,
+      toggleTheme,
     };
   },
 };
